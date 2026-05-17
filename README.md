@@ -18,9 +18,9 @@ Tento kurz je určen pro studenty informatiky a programátory, kteří chtějí 
 | 05 | [PowerShell skriptování](05-powershell-skriptovani.md) | Objekty, pipeline, moduly, cmdlety |
 | 06 | [Správa procesů](06-sprava-procesu.md) | Procesy, vlákna, PID, priority, signály |
 | 07 | [Bezpečná architektura](07-bezpecna-architektura.md) | Práva, uživatele, skupiny, firewall |
-| 08 | [Ovládání soukromosti](08-ovladani-soukromosti.md) | Souborové systémy, environment, logy |
+| 08 | [Správa logů a prostředí](08-ovladani-soukromosti.md) | Souborové systémy, environment, logy |
 | 09 | [Optimalizace výkonu](09-optimalizace-vykony.md) | CPU, paměť, disk, síť, profilování |
-| 10 | [Aktualizace systému](10-aktualizace-a-aktualizace.md) | Balíčky, jádro, patche, rollback |
+| 10 | [Aktualizace systému](10-aktualizace-systemu.md) | Balíčky, jádro, patche, rollback |
 | 11 | [Správa uživatelů a skupin](11-sprava-uzivatelu.md) | Uživatelé, skupiny, práva, sudo, sudoers |
 | 12 | [Práva souborů a adresářů](12-prava-souboru.md) | SUID, SGID, sticky bit, ACL, capabilities, umask |
 | 13 | [Správa souborového systému](13-sprava-filesystemu.md) | Disky, oddíly, mkfs, mount, fsck, LVM, swap |
@@ -30,6 +30,10 @@ Tento kurz je určen pro studenty informatiky a programátory, kteří chtějí 
 | 17 | [RAID a Redundance disků](17-raid-redundance-disku.md) | RAID, ZFS, BTRFS, LVM, SnapRAID |
 | 18 | [Proxmox RAID1 Mirror](18-proxmox-raid.md) | RAID1 na Proxmox VE – praktický návod |
 | 19 | [Práce s SSH](19-prace-s-ssh.md) | SSH klíče, sshd_config, tunelování, scp/rsync |
+| 20 | [Systemd](20-systemd.md) | Správa služeb, unit soubory, journalctl, timery |
+| 21 | [Monitoring systému](21-monitoring-systemu.md) | Sledování CPU, paměti, disku, sítě |
+| 22 | [Řešení problémů](22-reseni-problemu.md) | Diagnostika, nástroje, praktické scénáře |
+| 23 | [SELinux](23-selinux.md) | Mandatory Access Control, politiky, kontexty |
 
 ---
 
@@ -65,9 +69,9 @@ SkriptaOS/
 ├── 05-powershell-skriptovani.md   # PowerShell skriptování
 ├── 06-sprava-procesu.md           # Správa procesů
 ├── 07-bezpecna-architektura.md    # Bezpečná architektura
-├── 08-ovladani-soukromosti.md     # Ovládání soukromosti
+├── 08-ovladani-soukromosti.md     # Správa logů a prostředí
 ├── 09-optimalizace-vykony.md      # Optimalizace výkonu
-├── 10-aktualizace-a-aktualizace.md # Aktualizace systému
+├── 10-aktualizace-systemu.md    # Aktualizace systému
 ├── 11-sprava-uzivatelu.md         # Správa uživatelů a skupin
 ├── 12-prava-souboru.md            # Práva souborů a adresářů
 ├── 13-sprava-filesystemu.md       # Správa souborového systému
@@ -76,5 +80,9 @@ SkriptaOS/
 ├── 16-netplan.md                  # Netplan – konfigurace sítě
 ├── 17-raid-redundance-disku.md     # RAID a Redundance disků
 ├── 18-proxmox-raid.md              # Proxmox RAID1 Mirror
-└── 19-prace-s-ssh.md               # Práce s SSH
+├── 19-prace-s-ssh.md               # Práce s SSH
+├── 20-systemd.md                   # Systemd
+├── 21-monitoring-systemu.md        # Monitoring systému
+├── 22-reseni-problemu.md           # Řešení problémů
+└── 23-selinux.md                   # SELinux
 ```

@@ -1,13 +1,13 @@
-# Ovládání soukromosti v OS
+# Správa logů a prostředí
 
-> **Privacy Control in Operating Systems**
-> Praktický průvodce ochranou soukromí, auditováním přístupů a mazáním stop v Linuxu.
+> **Log and Environment Management**
+> Praktický průvodce správou logů, systémových proměnných a prostředí operačního systému.
 
 ---
 
 ## Úvod
 
-Ochrana soukromí v operačních systémech zahrnuje správu přístupových práv, auditování činností a bezpečné mazání citlivých dat. Tato kapitola se věnuje nástrojům a postupům pro kontrolu souborových systémů, uživatelských dat, síťové komunikace a systémových logů.
+Správa logů a systémových proměnných je klíčová pro diagnostiku problémů, auditování činnosti a zajištění správného běhu aplikací. Tato kapitola se věnuje nástrojům a postupům pro práci s logy, konfiguraci systémového prostředí a monitorování systémových zdrojů.
 
 ## 8.1 Souborový systém a práva
 
