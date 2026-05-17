@@ -28,6 +28,10 @@
 
 Tento dokument popisuje vytvoření **RAID1 (mirror)** na serveru Proxmox VE s využitím dvou SSD disků.
 
+### Pro koho je toto řešení určeno
+
+Toto řešení cílí na hardware s omezenými zdroji: 4-8 GB RAM a slabší procesor. Na rozdíl od ZFS, které vyžaduje minimálně 1 GB RAM na každý 1 TB úložiště a výkonnější CPU pro kompresi a kontrolní součty, má mdadm RAID1 minimální režii. RAID1 pouze zrcadlí data na oba disky bez režie výpočtu parity (RAID5/6) nebo copy-on-write (ZFS/Btrfs). Výsledkem je stejná ochrana proti selhání disku jako u ZFS mirroru, ale s minimálními nároky na systém. Požadovaná znalost OS je střední: základní zkušenosti s Linuxem (příkazy, LVM, mount, grub) bez nutnosti pokročilé správy úložišť.
+
 ### Co jsme vytvořili:
 
 | Komponenta | Typ | Popis |
