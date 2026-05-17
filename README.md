@@ -26,6 +26,8 @@ Tento kurz je určen pro studenty informatiky a programátory, kteří chtějí 
 | 14 | [Zálohování a obnova](14-zalohovani.md) | tar, gzip, rsync, dd, 3-2-1 strategie |
 | 15 | [AppArmor](15-apparmor.md) | AppArmor – Mandatory Access Control |
 | 16 | [Netplan](16-netplan.md) | Netplan – konfigurace sítě |
+| 17 | [RAID a Redundance disků](17-raid-redundance-disku.md) | RAID, ZFS, BTRFS, LVM, SnapRAID |
+| 18 | [Proxmox RAID1 Mirror](18-proxmox-raid.md) | RAID1 na Proxmox VE – praktický návod |
 
 ---
 
@@ -68,5 +70,7 @@ SkriptaOS/
 ├── 13-sprava-filesystemu.md       # Správa souborového systému
 ├── 14-zalohovani.md               # Zálohování a obnova
 ├── 15-apparmor.md                 # AppArmor (MAC)
-└── 16-netplan.md                  # Netplan – konfigurace sítě
+├── 16-netplan.md                  # Netplan – konfigurace sítě
+├── 17-raid-redundance-disku.md     # RAID a Redundance disků
+└── 18-proxmox-raid.md              # Proxmox RAID1 Mirror
 ```
