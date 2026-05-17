@@ -28,6 +28,7 @@ Tento kurz je určen pro studenty informatiky a programátory, kteří chtějí 
 | 16 | [Netplan](16-netplan.md) | Netplan – konfigurace sítě |
 | 17 | [RAID a Redundance disků](17-raid-redundance-disku.md) | RAID, ZFS, BTRFS, LVM, SnapRAID |
 | 18 | [Proxmox RAID1 Mirror](18-proxmox-raid.md) | RAID1 na Proxmox VE – praktický návod |
+| 19 | [Práce s SSH](19-prace-s-ssh.md) | SSH klíče, sshd_config, tunelování, scp/rsync |
 
 ---
 
@@ -72,5 +73,6 @@ SkriptaOS/
 ├── 15-apparmor.md                 # AppArmor (MAC)
 ├── 16-netplan.md                  # Netplan – konfigurace sítě
 ├── 17-raid-redundance-disku.md     # RAID a Redundance disků
-└── 18-proxmox-raid.md              # Proxmox RAID1 Mirror
+├── 18-proxmox-raid.md              # Proxmox RAID1 Mirror
+└── 19-prace-s-ssh.md               # Práce s SSH
 ```
