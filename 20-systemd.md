@@ -249,7 +249,7 @@ $ systemctl list-sockets
 ### Maskování
 
 ```bash
-# Úplné zakázání (nelze spustit ani ručně — link na /dev/null)
+# Úplné zakázání (nelze spustit ani ručně -- link na /dev/null)
 $ sudo systemctl mask apache2
 
 # Odmaskování
@@ -454,7 +454,7 @@ $ sudo systemctl mask apache2       # Úplné zakázání
 $ sudo systemctl unmask apache2
 $ sudo systemctl reset-failed sshd  # Reset stavu failed
 
-# Restart systemd (PID 1) — bezpečné, služby zůstávají
+# Restart systemd (PID 1) -- bezpečné, služby zůstávají
 $ sudo systemctl daemon-reexec
 
 # Reload konfigurace a signály

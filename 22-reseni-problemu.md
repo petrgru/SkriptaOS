@@ -387,6 +387,13 @@ Když narazíš na neznámý problém, použij tento univerzální checklist:
 6. **Hledej řešení** — Copy-paste error message do Google / Stack Overflow / ChatGPT, zkontroluj known issues.
 7. **Aplikuj opravu a over** — Jedna zmena najednou, dokumentuj, over že problém zmizel a nic se nerozbilo.
 
+```bash
+# Rychlý diagnostický skript (krok 2-4 v jednom)
+echo "=== Zdroje ===" && df -h / && free -h && uptime && \
+echo "=== Služby ===" && systemctl --failed && \
+echo "=== Logy ===" && journalctl -p err -b -n 10 --no-pager
+```
+
 ### Pravidlo 5 proč
 
 Technika root cause analysis. Ptej se "proč", dokud nenajdeš skutečnou prícinu:
