@@ -10,6 +10,7 @@ Tento kurz je určen pro studenty informatiky a programátory, kteří chtějí 
 
 | # | Sekce | Popis |
 |---|-------|-------|
+| 00 | [Základy OS](00-zaklady-os.md) | Teoretický základ: kernel, syscalls, scheduling |
 | 01 | [Základní Linux příkazy](01-linux-prikazy-zakladni.md) | Navigace, soubory, výstupní proudy, práva |
 | 02 | [Rozšířené Linux příkazy](02-linux-prikazy-rozirene.md) | Pipe, grep, sed, awk, find, xargs |
 | 03 | [Windows příkazy](03-windows-prikazy.md) | CMD a PowerShell příkazy pro Windows |
@@ -56,6 +57,7 @@ Doporučený postup je číst sekce po sobě – každá navazuje na předchozí
 ```
 SkriptaOS/
 ├── README.md                      # Hlavní navigace
+├── 00-zaklady-os.md               # Základy OS
 ├── 01-linux-prikazy-zakladni.md   # Základní Linux příkazy
 ├── 02-linux-prikazy-rozirene.md   # Rozšířené Linux příkazy
 ├── 03-windows-prikazy.md          # Windows příkazy
