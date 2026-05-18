@@ -17,7 +17,7 @@ Tento kurz je určen pro studenty informatiky a programátory, kteří chtějí 
 | 04 | [Bash skriptování](04-bash-skriptovani.md) | Proměnné, cykly, funkce, argumenty |
 | 05 | [PowerShell skriptování](05-powershell-skriptovani.md) | Objekty, pipeline, moduly, cmdlety |
 | 06 | [Správa procesů](06-sprava-procesu.md) | Procesy, vlákna, PID, priority, signály |
-| 07 | [Bezpečná architektura](07-bezpecna-architektura.md) | Práva, uživatele, skupiny, firewall |
+| 07 | [Bezpečná architektura](07-bezpecna-architektura.md) | Práva, uživatele, skupiny, bezpečnost |
 | 08 | [Správa logů a prostředí](08-ovladani-soukromosti.md) | Souborové systémy, environment, logy |
 | 09 | [Optimalizace výkonu](09-optimalizace-vykony.md) | CPU, paměť, disk, síť, profilování |
 | 10 | [Aktualizace systému](10-aktualizace-systemu.md) | Balíčky, jádro, patche, rollback |
@@ -34,6 +34,7 @@ Tento kurz je určen pro studenty informatiky a programátory, kteří chtějí 
 | 21 | [Monitoring systému](21-monitoring-systemu.md) | Sledování CPU, paměti, disku, sítě |
 | 22 | [Řešení problémů](22-reseni-problemu.md) | Diagnostika, nástroje, praktické scénáře |
 | 23 | [SELinux](23-selinux.md) | Mandatory Access Control, politiky, kontexty |
+| 24 | [Firewall](24-firewall.md) | iptables, nftables, ufw — správa a konfigurace Linux firewallu |
 
 ---
 
@@ -84,5 +85,6 @@ SkriptaOS/
 ├── 20-systemd.md                   # Systemd
 ├── 21-monitoring-systemu.md        # Monitoring systému
 ├── 22-reseni-problemu.md           # Řešení problémů
-└── 23-selinux.md                   # SELinux
+├── 23-selinux.md                   # SELinux
+└── 24-firewall.md
 ```

@@ -323,6 +323,8 @@ $ sudo ufw status
 $ sudo ufw allow 80/tcp
 ```
 
+> Podrobnější práci s firewallem najdete v [kapitole 24 (Firewall)](24-firewall.md).
+
 ---
 
 ## 7. Problémy s oprávněním
@@ -439,7 +441,7 @@ Skutečná příčina: chybějící konfigurace limitu paměti. Restart nginx by
 | Oprávnění — AppArmor | `aa-status` / `syslog` | `sudo aa-status; grep DENIED /var/log/syslog` |
 | Obecný postup | checklist / 5x proč | Viz sekce 8 |
 
-> **POZNÁMKA:** Tato kapitola se zaměřuje na obecný troubleshooting. Speciální případy: [SELinux troubleshooting](23-selinux.md), [AppArmor troubleshooting](15-apparmor.md), [Netplan troubleshooting](16-netplan.md). Základní příkazy `ps`, `top`, `systemctl start/stop` najdete v [kapitole 6 – Správa procesů](06-sprava-procesu.md). Monitorování výkonu v [kapitole 21 – Monitoring systému](21-monitoring-systemu.md).
+> **POZNÁMKA:** Tato kapitola se zaměřuje na obecný troubleshooting. Speciální případy: [SELinux troubleshooting](23-selinux.md), [AppArmor troubleshooting](15-apparmor.md), [Netplan troubleshooting](16-netplan.md), [Firewall troubleshooting](24-firewall.md). Základní příkazy `ps`, `top`, `systemctl start/stop` najdete v [kapitole 6 – Správa procesů](06-sprava-procesu.md). Monitorování výkonu v [kapitole 21 – Monitoring systému](21-monitoring-systemu.md).
 
 ---
 

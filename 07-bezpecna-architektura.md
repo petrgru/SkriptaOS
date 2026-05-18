@@ -170,67 +170,9 @@ sudo -l -U alice
 
 ## Síťová bezpečnost
 
-### Firewall (iptables, nftables, firewalld, ufw)
+> **Firewall** — Podrobný popis najdete v samostatné [kapitole 24 (Firewall)](24-firewall.md). Tato část obsahuje jen stručný přehled nástrojů.
 
-| Koncept | Popis | Příklad | Výstup |
-|---------|-------|---------|--------|
-| `iptables` | Tradiční packet filter (Linux) | `iptables -L -n` | `Chain INPUT (policy ACCEPT)`<br>`target prot opt source destination`<br>`ACCEPT tcp -- 0.0.0.0/0 0.0.0.0/0 tcp dpt:22` |
-| `nftables` | Moderní nástupce iptables | `nft list ruleset` | `table inet filter {`<br>`  chain input { type filter hook input priority 0; policy drop; }`<br>`}` |
-| `firewalld` | Dynamická firewall vrstva (RHEL/CentOS/Fedora) | `firewall-cmd --list-all` | `public (active)`<br>`  ports: 80/tcp 443/tcp`<br>`  services: ssh` |
-| `ufw` | Zjednodušený firewall (Ubuntu) | `ufw status verbose` | `Status: active`<br>`Logging: on (low)`<br>`Default: deny (incoming), allow (outgoing)` |
-
-```bash
-# iptables - povolení SSH, HTTP, HTTPS, blokování všeho ostatního
-iptables -P INPUT DROP
-iptables -P FORWARD DROP
-iptables -P OUTPUT ACCEPT
-
-iptables -A INPUT -i lo -j ACCEPT
-iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-iptables -A INPUT -p tcp --dport 22 -j ACCEPT
-iptables -A INPUT -p tcp --dport 80 -j ACCEPT
-iptables -A INPUT -p tcp --dport 443 -j ACCEPT
-
-iptables -L -n -v
-# Chain INPUT (policy DROP 0 packets, 0 bytes)
-#     pkts bytes target     prot opt in     out     source           destination
-#       0     0 ACCEPT     all  --  lo     *       0.0.0.0/0        0.0.0.0/0
-#       0     0 ACCEPT     all  --  *      *       0.0.0.0/0        0.0.0.0/0     state RELATED,ESTABLISHED
-#       0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0        0.0.0.0/0     tcp dpt:22
-#       0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0        0.0.0.0/0     tcp dpt:80
-#       0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0        0.0.0.0/0     tcp dpt:443
-
-# Uložení pravidel pro perzistenci
-iptables-save > /etc/iptables/rules.v4
-
-# nftables - stejná pravidla moderně
-nft add table inet filter
-nft add chain inet filter input { type filter hook input priority 0 \; policy drop \; }
-nft add rule inet filter input iif lo accept
-nft add rule inet filter input ct state established,related accept
-nft add rule inet filter input tcp dport { 22, 80, 443 } accept
-
-# firewalld (RHEL/CentOS/Fedora)
-firewall-cmd --zone=public --add-service=http --permanent
-firewall-cmd --zone=public --add-service=https --permanent
-firewall-cmd --zone=public --add-port=8080/tcp --permanent
-firewall-cmd --reload
-
-# ufw (Ubuntu)
-ufw default deny incoming
-ufw default allow outgoing
-ufw allow ssh
-ufw allow 80/tcp
-ufw allow 443/tcp
-ufw enable
-ufw status numbered
-# Status: active
-#      To                         Action      From
-# -- ------                         ------      ----
-# [ 1] 22/tcp                     ALLOW IN    Anywhere
-# [ 2] 80/tcp                     ALLOW IN    Anywhere
-# [ 3] 443/tcp                    ALLOW IN    Anywhere
-```
+Linux nabízí několik nástrojů pro správu firewallu: **iptables** (tradiční), **nftables** (moderní nástupce), **UFW** (uživatelsky přívětivý obal pro Ubuntu) a **firewalld** (RHEL/Fedora). Každý nástroj pokrývá stejnou funkcionalitu — filtrování paketů, NAT, ochranu proti útokům — liší se syntaxí a filozofií.
 
 ### TCP wrappers, SELinux, AppArmor
 
@@ -658,59 +600,7 @@ ss -tlnp | grep 2222
 # LISTEN 0 128 0.0.0.0:2222 0.0.0.0:* users:(("sshd",pid=1234,fd=3))
 ```
 
-### 2. Firewall pro webový server
 
-```bash
-#!/bin/bash
-# firewall-web.sh - Nastavení firewallu pro webový server
-
-# Výchozí politika - vše zakázáno
-iptables -P INPUT DROP
-iptables -P FORWARD DROP
-iptables -P OUTPUT ACCEPT
-
-# Loopback
-iptables -A INPUT -i lo -j ACCEPT
-
-# Již navázaná spojení
-iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-
-# HTTP/HTTPS
-iptables -A INPUT -p tcp --dport 80 -j ACCEPT
-iptables -A INPUT -p tcp --dport 443 -j ACCEPT
-
-# SSH (jen z administrační sítě)
-iptables -A INPUT -p tcp --dport 22 -s 10.0.0.0/24 -j ACCEPT
-
-# Rate limiting proti brute force
-iptables -A INPUT -p tcp --dport 22 -m state --state NEW \
-  -m recent --set --name SSH
-iptables -A INPUT -p tcp --dport 22 -m state --state NEW \
-  -m recent --update --seconds 60 --hitcount 4 --name SSH -j DROP
-
-# Ochrana proti skenování portů
-iptables -A INPUT -m recent --name portscan --rcheck --seconds 60 -j DROP
-iptables -A FORWARD -m recent --name portscan --rcheck --seconds 60 -j DROP
-iptables -A INPUT -m recent --name portscan --set -j LOG --log-prefix "Portscan:"
-iptables -A FORWARD -m recent --name portscan --set -j LOG --log-prefix "Portscan:"
-
-# ICMP - pouze ping
-iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 1/s -j ACCEPT
-iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
-
-# Uložení pravidel
-iptables-save > /etc/iptables/rules.v4
-
-# Výsledek
-iptables -L -n --line-numbers
-# Chain INPUT (policy DROP)
-# num  target     prot opt source           destination
-# 1    ACCEPT     all  --  0.0.0.0/0        0.0.0.0/0
-# 2    ACCEPT     all  --  0.0.0.0/0        0.0.0.0/0     ctstate RELATED,ESTABLISHED
-# 3    ACCEPT     tcp  --  0.0.0.0/0        0.0.0.0/0     tcp dpt:80
-# 4    ACCEPT     tcp  --  0.0.0.0/0        0.0.0.0/0     tcp dpt:443
-# 5    ACCEPT     tcp  --  10.0.0.0/24      0.0.0.0/0     tcp dpt:22
-```
 
 ### 3. Audit logů a detekce průniku
 
@@ -761,7 +651,7 @@ ausearch -k passwd_changes --start today 2>/dev/null || echo "auditd rule not co
 
 - **Souborová bezpečnost**: `chmod` pro základní práva, `setfacl` pro jemnější řízení přístupu, `chattr +i` pro ochranu proti smazání, SUID/SGID/sticky bit pro speciální případy.
 - **Uživatelé a skupiny**: `useradd`/`usermod` pro správu uživatelů, `/etc/shadow` pro bezpečné ukládání hesel, `/etc/sudoers` pro delegování práv.
-- **Síťová bezpečnost**: `iptables`/`nftables` pro packet filtering, `firewalld`/`ufw` pro zjednodušenou správu, SELinux/AppArmor pro mandatory access control.
+- **Síťová bezpečnost**: Firewall — podrobnosti v [kapitole 24](24-firewall.md), SELinux/AppArmor pro mandatory access control.
 - **Systémová bezpečnost**: `fail2ban` blokuje brute force útoky, `auditd` sleduje změny, `sysctl` hardening chrání jádro, PAM řídí autentizaci.
 - **Šifrování**: GPG pro šifrování souborů a emailů, OpenSSL pro TLS certifikáty, LUKS pro šifrování celého disku, SSH klíče pro bezpečné přihlašování.
 - **Praktické tipy**: Vypněte root SSH přístup, používejte klíče místo hesel, pravidelně kontrolujte logy, aplikujte kernel hardening, zapněte auditování důležitých souborů.

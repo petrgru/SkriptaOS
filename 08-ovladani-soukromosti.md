@@ -211,6 +211,8 @@ sudo ip6tables -L -n -v
 sudo iptables -A INPUT -s 10.0.0.0/8 -j DROP
 ```
 
+> Podrobnosti o firewallu viz [kapitola 24 (Firewall)](24-firewall.md).
+
 ---
 
 ## 8.4 Systém a logy
@@ -447,6 +449,8 @@ echo ""
 echo "=== NEZNAMA SPOJENI ==="
 ss -tnp state established | grep -v "127.0.0.1\|::1:" | grep -v "192.168."
 ```
+
+> Podrobnosti o firewallu viz [kapitola 24 (Firewall)](24-firewall.md).
 
 ### Scénář 2: Audit přístupových práv
 
