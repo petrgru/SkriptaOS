@@ -1,18 +1,18 @@
 # 25. Bezpečnostní audit a detekce průniku
-> Resení zabezpecení, kontrola integrity a detekce nelegálního prístupu v Linuxu
+> Řešení zabezpečení, kontrola integrity a detekce nelegálního přístupu v Linuxu
 
 ---
 
 ## Úvod
 
-Bezpecnostní audit je systematická kontrola systému s cílem odhalit neoprávnené zmeny, skrytý malware, rootkity nebo jinou podezrelou aktivitu. Zatímco kapitola 7 se venovala základní bezpecné architekture a kapitola 24 firewallu, tato kapitola se zamERuje na nástroje pro detekci jiz probihajícího nebo probehlého útoku.
+Bezpečnostní audit je systematická kontrola systému s cílem odhalit neoprávněné změny, skrytý malware, rootkity nebo jinou podezřelou aktivitu. Zatímco kapitola 7 se věnovala základní bezpečné architektuře a kapitola 24 firewallu, tato kapitola se zaměřuje na nástroje pro detekci již probíhajícího nebo proběhlého útoku.
 
-Bezpecnostní audit delíme na nekolik oblasti:
+Bezpečnostní audit dělíme na několik oblastí:
 
-- **Kontrola integrity souboru** — overení, zda se soubory od poslední známé verze nezmenily (checksumy).
-- **Detekce rootkitu** — hledání skrytých modulu, procesu a zmenených systémových binárek.
-- **Sledování zmen v kritických adresárich** — nástroje jako AIDE nebo Tripwire.
-- **Overení nainstalovaných balícku** — kontrola, zda binární soubory balícku nebyly pozmeneny.
+- **Kontrola integrity souborů** — ověření, zda se soubory od poslední známé verze nezměnily (checksumy).
+- **Detekce rootkitu** — hledání skrytých modulů, procesů a změněných systémových binárek.
+- **Sledování změn v kritických adresářích** — nástroje jako AIDE nebo Tripwire.
+- **Ověření nainstalovaných balíčků** — kontrola, zda binární soubory balíčků nebyly pozměněny.
 - **Automatizace pravidelného auditu** — skripty a cron úlohy.
 
 ```mermaid
@@ -31,24 +31,24 @@ graph TD
   I --> J
 ```
 
-> **Predpoklady:** Základní znalost bash príkazu (kapitoly 1, 2), správy balícku (kapitola 10) a souborových práv (kapitola 12).
+> **Předpoklady:** Základní znalost bash příkazu (kapitoly 1, 2), správy balíčků (kapitola 10) a souborových práv (kapitola 12).
 
 ---
 
-## 1. Kontrolní soucty (checksumy)
+## 1. Kontrolní součty (checksumy)
 
-Kontrolní soucet (hash, fingerprint) je jednosmerný otisk souboru. Pokud se soubor byt jen nepatrne zmení, výsledný hash je zcela jiný. To umoznuje detekovat i sebemensí zmeny.
+Kontrolní součet (hash, fingerprint) je jednosměrný otisk souboru. Pokud se soubor byť jen nepatrně změní, výsledný hash je zcela jiný. To umožňuje detekovat i sebemenší změny.
 
-### Pouzité nástroje
+### Použité nástroje
 
-| Nástroj | Príkaz | Soucást |
+| Nástroj | Příkaz | Součást |
 |---------|--------|---------|
 | MD5 | `md5sum` | coreutils |
 | SHA-1 | `sha1sum` | coreutils |
 | SHA-256 | `sha256sum` | coreutils |
 | BLAKE2 | `b2sum` | coreutils |
 
-Vsechny nastroje jsou soucástí balícku `coreutils`, tedy dostupné na kazdé Linuxové distribuci.
+Všechny nástroje jsou součástí balíčku `coreutils`, tedy dostupné na každé Linuxové distribuci.
 
 ### Generování checksumu
 
@@ -57,31 +57,31 @@ Vsechny nastroje jsou soucástí balícku `coreutils`, tedy dostupné na kazdé 
 sha256sum /etc/passwd
 # a1b2c3d4e5f6...   /etc/passwd
 
-# Ulození do souboru (baseline)
+# Uložení do souboru (baseline)
 sha256sum /etc/passwd > passwd.sha256
 
-# Více souboru najednou
+# Více souborů najednou
 sha256sum /etc/passwd /etc/shadow /etc/group > baseline.sha256
 # a1b2c3...  /etc/passwd
 # d4e5f6...  /etc/shadow
 # g7h8i9...  /etc/group
 ```
 
-### Ooverení
+### Ověření
 
 ```bash
-# Ooverení jednoho souboru
+# Ověření jednoho souboru
 sha256sum -c passwd.sha256
 # /etc/passwd: OK
 
-# Ooverení vsech souboru v baseline
+# Ověření všech souborů v baseline
 sha256sum -c baseline.sha256
 # /etc/passwd: OK
 # /etc/shadow: OK
 # /etc/group: OK
 ```
 
-Pri neshode vypadá výstup takto:
+Při neshodě vypadá výstup takto:
 
 ```bash
 sha256sum -c baseline.sha256
@@ -94,61 +94,61 @@ sha256sum -c baseline.sha256
 ### Ostatní algoritmy
 
 ```bash
-# MD5 (jen pro kompatibilitu, ne pro bezpecnost)
+# MD5 (jen pro kompatibilitu, ne pro bezpečnost)
 md5sum /etc/passwd
 # 5d41402abc4b2a76b9719d911017c592  /etc/passwd
 
-# SHA-1 (oslabený, nedoporucuje se)
+# SHA-1 (oslabený, nedoporučuje se)
 sha1sum /etc/passwd
 
 # BLAKE2b (moderní, rychlý)
 b2sum /etc/passwd
 ```
 
-### Porovnání algoritmu
+### Porovnání algoritmů
 
-| Algoritmus | Delka hash | Rychlost | Bezpecnost | Pouzití |
+| Algoritmus | Délka hash | Rychlost | Bezpečnost | Použití |
 |------------|-----------|----------|------------|---------|
-| MD5 | 128 bitu / 32 znaku | Velmi rychlý | Není bezpecný | Kontrola integrity (ne kryptografie) |
-| SHA-1 | 160 bitu / 40 znaku | Rychlý | Oslabený | Legacy systémy |
-| SHA-256 | 256 bitu / 64 znaku | Strední | Bezpecný | Standard pro overování souboru |
-| BLAKE2b | 512 bitu / 128 znaku | Velmi rychlý | Bezpecný | Moderní alternativa SHA-256 |
+| MD5 | 128 bitů / 32 znaků | Velmi rychlý | Není bezpečný | Kontrola integrity (ne kryptografie) |
+| SHA-1 | 160 bitů / 40 znaků | Rychlý | Oslabený | Legacy systémy |
+| SHA-256 | 256 bitů / 64 znaků | Střední | Bezpečný | Standard pro ověřování souboru |
+| BLAKE2b | 512 bitů / 128 znaků | Velmi rychlý | Bezpečný | Moderní alternativa SHA-256 |
 
-### Bezpecnostní poznamky
+### Bezpečnostní poznámky
 
-- **MD5** má znamé kolize (dva ruzné soubory mohou mít stejný hash). Nepouzívejte ho pro bezpecnostní úcely, jen pro kontrolu nezávaVných dat.
-- **SHA-1** je teoreticky oslabený (2017 publikován útok SHAttered na kolizi). Staré systémy jej mohou pouzívat, pro nové projekty zvolte SHA-256.
-- **SHA-256** je aktuální standard. Pouzívá se pro podpisy balícku, certifikáty a integrityní kontrolu.
-- **BLAKE2b** je moderní algoritmus, rychlejsí nez SHA-256 na 64bitových systémech. Soucást coreutils (b2sum) od coreutils 8.26.
+- **MD5** má známé kolize (dva různé soubory mohou mít stejný hash). Nepoužívejte ho pro bezpečnostní účely, jen pro kontrolu nezávazných dat.
+- **SHA-1** je teoreticky oslabený (2017 publikován útok SHAttered na kolizi). Staré systémy jej mohou používat, pro nové projekty zvolte SHA-256.
+- **SHA-256** je aktuální standard. Používá se pro podpisy balíčků, certifikáty a integritní kontrolu.
+- **BLAKE2b** je moderní algoritmus, rychlejší než SHA-256 na 64bitových systémech. Součást coreutils (b2sum) od coreutils 8.26.
 
-> **Poznámka:** Checksum pouze kontroluje integritu souboru, ne autenticitu (kdo soubor vytvoril). Pro overení puvodu pouzijte GPG podpis (`gpg --verify`).
+> **Poznámka:** Checksum pouze kontroluje integritu souboru, ne autenticitu (kdo soubor vytvořil). Pro ověření původu použijte GPG podpis (`gpg --verify`).
 
 ---
 
 ## 2. Detekce rootkitu
 
-Rootkit je software, který se po pruniku do systému snazí utajit svou prítomnost. Typicky modifikuje systémová volání, skryvá procesy, soubory a síové spojení pred standardními nástroji (ps, ls, netstat).
+Rootkit je software, který se po průniku do systému snaží utajit svou přítomnost. Typicky modifikuje systémová volání, skryvá procesy, soubory a síťové spojení před standardními nástroji (ps, ls, netstat).
 
 ### Jak rootkity fungují
 
-- **Kernel rootkity** — modifikují jádro nebo nacítají vlastní modul. Skryjí procesy a soubory na úrovni jádra (napr. `sys_call_table` hooking).
-- **Userland rootkity** — nahrazují systémové binárky (ps, ls, netstat) vlastními verzemi, které neukazují skryté polozky.
-- **Bootkit** — infikuje bootloader nebo MBR, nacítá se dríve nez OS.
+- **Kernel rootkity** — modifikují jádro nebo načítají vlastní modul. Skryjí procesy a soubory na úrovni jádra (např. `sys_call_table` hooking).
+- **Userland rootkity** — nahrazují systémové binárky (ps, ls, netstat) vlastními verzemi, které neukazují skryté položky.
+- **Bootkit** — infikuje bootloader nebo MBR, načítá se dříve než OS.
 - **Firmware rootkit** — infikuje firmware zarízení (UEFI, síová karta, disk).
 
 ### chkrootkit
 
-chkrootkit je jednoduchý skener, který kontroluje znamé rootkity a podezrelé vzory v systému.
+chkrootkit je jednoduchý skener, který kontroluje známé rootkity a podezřelé vzory v systému.
 
 ```bash
 # Instalace
 sudo apt install chkrootkit
 
-# Spustení základní kontroly
+# Spuštění základní kontroly
 sudo chkrootkit
 ```
 
-Výstup je clenený do sekcí:
+Výstup je členěný do sekcí:
 
 ```
 ROOTDIR is '/'
@@ -160,11 +160,11 @@ Checking 'chkutmp'... not infected
 Checking 'php_includes'... not infected
 ```
 
-Dulezité je hledat slovo `INFECTED`:
+Důležité je hledat slovo `INFECTED`:
 
 ```bash
 sudo chkrootkit | grep INFECTED
-# (prazdný výstup = žádný nález)
+# (prázdný výstup = žádný nález)
 ```
 
 Pokud chkrootkit neco najde:
@@ -174,7 +174,7 @@ sudo chkrootkit | grep INFECTED
 # Checking 'scalper'... INFECTED
 ```
 
-Varování: chkrootkit nekdy hlásí falesne poplachy na nekterých bezproblémových systémech. Vzdy overte rucne.
+Varování: chkrootkit někdy hlásí falešné poplachy na některých bezproblémových systémech. Vždy ověřte ručně.
 
 ```bash
 # Test "not tested" — moduly, které nebyly otestovány
@@ -183,20 +183,20 @@ sudo chkrootkit 2>&1 | grep "not tested"
 
 ### rkhunter (Rootkit Hunter)
 
-rkhunter je komplexnejsí nastroj. Oproti chkrootkit kontroluje také systémové binárky (pomocí checksumu), skryté procesy a podezrelé stringy.
+rkhunter je komplexnější nástroj. Oproti chkrootkit kontroluje také systémové binárky (pomocí checksumu), skryté procesy a podezřelé stringy.
 
 ```bash
 # Instalace
 sudo apt install rkhunter
 
-# Vytvorení databáze "known good" souboru (po instalaci)
+# Vytvoření databáze "known good" souborů (po instalaci)
 sudo rkhunter --propupd
 
-# Spustení kontroly (bez cekání na klávesu)
+# Spuštění kontroly (bez cekání na klávesu)
 sudo rkhunter --check --skip-keypress
 ```
 
-Pri prvním spustení rkhunter vytvorí databázi `/var/lib/rkhunter/db` s otisky systémových souboru. Pri dalsích kontrolách porovnává aktuální stav.
+Při prvním spuštění rkhunter vytvoří databázi `/var/lib/rkhunter/db` s otisky systémových souborů. Při dalších kontrolách porovnává aktuální stav.
 
 Výstup:
 
@@ -207,7 +207,7 @@ Výstup:
 [ ok ] Checking file properties [ Warning ]
 ```
 
-Varování u file properties znamená, ze se soubor od doby propupd zmenil (napr. po aktualizaci):
+Varování u file properties znamená, že se soubor od doby propupd změnil (např. po aktualizaci):
 
 ```
 Warning: The file properties have changed:
@@ -217,9 +217,9 @@ Warning: The file properties have changed:
   Reason: Updated package
 ```
 
-To je casto falesný poplach po apt upgrade. Resením je znovu spustit `rkhunter --propupd`.
+To je často falešný poplach po apt upgrade. Řešením je znovu spustit `rkhunter --propupd`.
 
-### Automatizace pres cron
+### Automatizace přes cron
 
 ```bash
 # Denní kontrola v 2:00, výsledky do logu
@@ -230,24 +230,24 @@ echo "0 2 * * * root /usr/bin/rkhunter --check --skip-keypress --report-warnings
 
 | Vlastnost | chkrootkit | rkhunter |
 |-----------|-----------|----------|
-| Rychlost | Rychlý | Pomalejsí (kontroluje binárky) |
-| Detekce rootkitu | Znamé rootkity | Znamé rootkity + podezrelé vzory |
+| Rychlost | Rychlý | Pomalejší (kontroluje binárky) |
+| Detekce rootkitu | Znamé rootkity | Znamé rootkity + podezřelé vzory |
 | Kontrola binárek | Ne | Ano (pomocí hashe a vlastností) |
 | Databáze | Není | Ano (`/var/lib/rkhunter/db`) |
-| Falesné poplachy | Nekdy (závisí na systému) | Po aktualizacích casto |
-| Vhodné pro | Rychlá orientacní kontrola | Pravidelný hloubkový audit |
+| Falesné poplachy | Někdy (závisí na systému) | Po aktualizacích často |
+| Vhodné pro | Rychlá orientační kontrola | Pravidelný hloubkový audit |
 
-> **Dulezité:** Oba nástroje detekují pouze *známé* rootkity. Nový nebo modifikovaný rootkit muze projít. Proto kombinujeme kontrolu rootkitu s overením integrity (AIDE, debsums).
+> **Důležité:** Oba nástroje detekují pouze *známé* rootkity. Nový nebo modifikovaný rootkit může projít. Proto kombinujeme kontrolu rootkitu s ověřením integrity (AIDE, debsums).
 
 ---
 
-## 3. Sledování integrity souboru
+## 3. Sledování integrity souborů
 
-Pro kontrolu zmen v adresáRich jako `/etc`, `/bin`, `/sbin` nebo `/usr` slouzí dedikované integrityní nástroje. UmoVnují vzít "snapshot" kritických souboru a pravidelne jej porovnávat.
+Pro kontrolu změn v adresářích jako `/etc`, `/bin`, `/sbin` nebo `/usr` slouží dedikované integritní nástroje. Umožňují vzít "snapshot" kritických souborů a pravidelně jej porovnávat.
 
 ### AIDE (Advanced Intrusion Detection Environment)
 
-AIDE vytvorí databázi hashu (SHA-256, SHA-512, RIPEMD160 atd.) ze sledovaných souboru. Pri kazdé kontrole porovná aktuální hashe s databází.
+AIDE vytvoří databázi hashu (SHA-256, SHA-512, RIPEMD160 atd.) ze sledovaných souborů. Při každé kontrole porovná aktuální hashe s databází.
 
 ```bash
 # Instalace
@@ -262,7 +262,7 @@ sudo aideinit
 # Done: 42 files, 12 directories, 0 errors
 ```
 
-`aideinit` vytvorí `/var/lib/aide/aide.db.new`. Pro pouzití je treba přejmenovat:
+`aideinit` vytvoří `/var/lib/aide/aide.db.new`. Pro použití je třeba přejmenovat:
 
 ```bash
 sudo mv /var/lib/aide/aide.db.new /var/lib/aide/aide.db
@@ -279,7 +279,7 @@ sudo aide --check
 # changed: /etc/ssh/sshd_config
 ```
 
-Konfigurace v `/etc/aide/aide.conf` urcuje, co a jakým algoritmem se kontroluje:
+Konfigurace v `/etc/aide/aide.conf` určuje, co a jakým algoritmem se kontroluje:
 
 ```
 # Sledovat /etc se SHA-256 a vsemi atributy
@@ -289,7 +289,7 @@ Konfigurace v `/etc/aide/aide.conf` urcuje, co a jakým algoritmem se kontroluje
 !/var/log
 ```
 
-Aktualizace databáze po legitinních zmenách:
+Aktualizace databáze po legitimních změnách:
 
 ```bash
 # Po aktualizaci systemu
@@ -299,7 +299,7 @@ sudo mv /var/lib/aide/aide.db.new /var/lib/aide/aide.db
 
 ### Tripwire
 
-Tripwire funguje na stejném principu jako AIDE, ale je konfiguracn nárocnejsí.
+Tripwire funguje na stejném principu jako AIDE, ale je konfiguračně náročnější.
 
 ```bash
 # Instalace
@@ -338,7 +338,7 @@ Modified objects:
 "/etc/ssh/sshd_config"
 ```
 
-Aktualizace po legitinní zmene:
+Aktualizace po legitimní změně:
 
 ```bash
 sudo tripwire --update --twrfile /var/lib/tripwire/report/*.twr
@@ -362,46 +362,46 @@ graph LR
 
 | Vlastnost | AIDE | Tripwire |
 |-----------|------|----------|
-| Instalace | Jednoduchá | Slozitjsí (nutný klíc) |
-| Rychlost | Rychlá | Pomalejsí |
-| Konfigurace | `/etc/aide/aide.conf` | `/etc/tripwire/twpol.txt` + klíce |
-| Databáze | Obyc. soubor | Sífrovaná + podepsaná |
+| Instalace | Jednoduchá | Složitější (nutný klíč) |
+| Rychlost | Rychlá | Pomalejší |
+| Konfigurace | `/etc/aide/aide.conf` | `/etc/tripwire/twpol.txt` + klíče |
+| Databáze | Obyč. soubor | Šifrovaná + podepsaná |
 | Hash algoritmy | SHA-256, SHA-512, RIPEMD160 | MD5, SHA-256, SHA-512 |
 | Aktualizace | mv aide.db.new aide.db | `tripwire --update` |
-| Vhodné pro | Ub/Deb/RHEL (univerzální) | Kdyz je treba podpis databáze |
+| Vhodné pro | Ub/Deb/RHEL (univerzální) | Když je třeba podpis databáze |
 
-> **Platformní poznámka:** Oba nástroje jsou dostupné na vsech Linuxových distribucích. AIDE je jednodussí na údrzbu a doporucujeme ho pro zatející uzivatele.
+> **Platformní poznámka:** Oba nástroje jsou dostupné na všech Linuxových distribucích. AIDE je jednodušší na údržbu a doporučujeme ho pro začínající uživatele.
 
 ---
 
-## 4. Integrita nainstalovaných balícku
+## 4. Integrita nainstalovaných balíčků
 
-Zatímco AIDE a checksumy kontrolují zmeny v libovolných souborech, debsums (Debian/Ubuntu) a `rpm --verify` (RHEL/Fedora) overují soubory primo proti databázi balíckového systému. To odhalí, zda byl binární soubor balícku pozmenen od jeho instalace.
+Zatímco AIDE a checksumy kontrolují změny v libovolných souborech, debsums (Debian/Ubuntu) a `rpm --verify` (RHEL/Fedora) ověřují soubory přímo proti databázi balíčkového systému. To odhalí, zda byl binární soubor balíčků pozměněn od jeho instalace.
 
 ### debsums (Debian/Ubuntu)
 
-debsums porovnává nainstalované soubory s otisky ulozenými v balíckové databázi (`/var/lib/dpkg/info/*.md5sums`).
+debsums porovnává nainstalované soubory s otisky uloženými v balíčkové databázi (`/var/lib/dpkg/info/*.md5sums`).
 
 ```bash
 # Instalace
 sudo apt install debsums
 
-# Kontrola vsech balícku (jen zmenené)
+# Kontrola všech balíčků (jen změněné)
 sudo debsums -s
-# (prazdný výstup = vse v porádku)
+# (prázdný výstup = vse v pořádku)
 
-# Kontrola konkrétního balícku
+# Kontrola konkrétního balíčku
 debsums bash
 # /bin/bash                                                  OK
 # /bin/sh                                                    OK
 # /usr/share/man/man1/bash.1.gz                              OK
 
-# Pokud je soubor zmenen:
+# Pokud je soubor změněn:
 debsums bash
 # /bin/bash                                                  FAILED
 ```
 
-Parametr `-a` kontroluje i konfiguracní soubory:
+Parametr `-a` kontroluje i konfigurační soubory:
 
 ```bash
 sudo debsums -a
@@ -417,10 +417,10 @@ sudo debsums -s
 
 ### rpm --verify (RHEL/Fedora/CentOS)
 
-rpm vestavené (není treba instalovat):
+rpm vestavěné (není třeba instalovat):
 
 ```bash
-# Kontrola vsech balícku
+# Kontrola všech balíčků
 rpm -Va
 # S.5....T.  c /etc/ssh/sshd_config
 # .M......    /bin/ls
@@ -439,43 +439,43 @@ Výstupní kódování:
 | c | Konfiguracní soubor (config) |
 | d | Dokumentacní soubor (doc) |
 
-Kontrola konkrétního balícku:
+Kontrola konkrétního balíčku:
 
 ```bash
 rpm -V bash
-# (prazdný výstup = vse OK)
+# (prázdný výstup = vse OK)
 
 rpm -V coreutils
 # S.5....T.    /bin/ls
 ```
 
-### Co delat, kdyz hash nesouhlasi
+### Co dělat, když hash nesouhlasí
 
-1. Zjistete, jestli soubor nebyl zmenen aktualizací (apt upgrade / dnf update).
-2. Pokud ano, je to v porádku — databáze se po aktualizaci sama obnoví.
-3. Pokud ne, a zmena není zaznamenaná v logu, je to vázný problém. Muze jít o rootkit, ktery nahradil binární soubory.
-4. Bezte okamzite k bodu 7 (Praktický príklad).
+1. Zjistěte, jestli soubor nebyl změněn aktualizací (apt upgrade / dnf update).
+2. Pokud ano, je to v pořádku — databáze se po aktualizaci sama obnoví.
+3. Pokud ne, a změna není zaznamenaná v logu, je to vážný problém. Může jít o rootkit, který nahradil binární soubory.
+4. Běžte okamžitě k bodu 7 (Praktický příklad).
 
-> **Platformní poznamka:** `debsums` je dostupný na Debian/Ubuntu a odvozených distribucích. `rpm --verify` je vestavený v RHEL/Fedora/CentOS a odvozených. Na systemd distribucích lze pouzít také `systemd-analyze verify` pro kontrolu unit souboru.
+> **Platformní poznámka:** `debsums` je dostupný na Debian/Ubuntu a odvozených distribucích. `rpm --verify` je vestavěný v RHEL/Fedora/CentOS a odvozených. Na systemd distribucích lze použít také `systemd-analyze verify` pro kontrolu unit souborů.
 
 ---
 
-## 5. Prepocy checksumu po aktualizacích
+## 5. Přepočty checksumu po aktualizacích
 
-Kazdá aktualizace systému (`apt upgrade`, `dnf update`) mení binární soubory. Pokud nepřepocteme integrityní databáze, povedou dalsí kontroly k falesným poplachum.
+Každá aktualizace systému (`apt upgrade`, `dnf update`) mění binární soubory. Pokud nepřepočteme integritní databáze, povedou další kontroly k falešným poplachům.
 
 ### AIDE automatizace
 
-Po apt upgrade je treba databázi pregenerovat. Lze to rídit automaticky pres `apt.conf.d`:
+Po apt upgrade je třeba databázi pregenerovat. Lze to řídit automaticky přes `apt.conf.d`:
 
 ```bash
 # /etc/apt/apt.conf.d/99aide-update
 DPkg::Post-Invoke { "if [ -f /var/lib/aide/aide.db ]; then cp /var/lib/aide/aide.db /var/lib/aide/aide.db.backup; aideinit; mv /var/lib/aide/aide.db.new /var/lib/aide/aide.db; fi"; };
 ```
 
-Tento script se spustí po kazdém `apt install` nebo `apt upgrade`. Pokud se `aideinit` nepodarí, zustává záloAní kopie.
+Tento script se spustí po každém `apt install` nebo `apt upgrade`. Pokud se `aideinit` nepodaří, zůstává záložní kopie.
 
-Alternativa pres cron (týdne):
+Alternativa přes cron (týdne):
 
 ```bash
 # /etc/cron.weekly/aide-update
@@ -489,12 +489,12 @@ fi
 ### rkhunter automatizace
 
 ```bash
-# Prepocet databáze po kazdém apt upgrade
+# Prepocet databáze po každém apt upgrade
 # /etc/apt/apt.conf.d/99rkhunter-update
 DPkg::Post-Invoke { "/usr/bin/rkhunter --propupd"; };
 ```
 
-Nebo tydenní cron:
+Nebo týdenní cron:
 
 ```bash
 # /etc/cron.weekly/rkhunter-update
@@ -504,7 +504,7 @@ Nebo tydenní cron:
 
 ### integrity-check.sh a aktualizace
 
-Pokud pouzíváte vlastní baseline (z dalsí sekce), je treba ji po kazdé aktualizaci pregenerovat:
+Pokud používáte vlastní baseline (z další sekce), je třeba ji po každé aktualizaci pregenerovat:
 
 ```bash
 # Prepocet po apt upgrade
@@ -519,7 +519,7 @@ sudo integrity-check.sh -g
 | AIDE | Cron (nedele 3:00) | aideinit + mv |
 | rkhunter | Post-Invoke apt | rkhunter --propupd |
 | rkhunter | Cron (nedele 4:00) | rkhunter --propupd |
-| integrity-check.sh | Manualne po zmenách | integrity-check.sh -g |
+| integrity-check.sh | Manuálně po změnách | integrity-check.sh -g |
 
 ---
 
@@ -527,13 +527,13 @@ sudo integrity-check.sh -g
 
 ### Skript 1: integrity-check.sh
 
-Skript vytvorí baseline vybraných kritických souboru (SHA-256) a umoznuje jejich pravidelné overování.
+Skript vytvoří baseline vybraných kritických souborů (SHA-256) a umožňuje jejich pravidelné ověřování.
 
 ```bash
 #!/bin/bash
-# integrity-check.sh - Kontrola integrity kritických systémových souboru
-# Pouzití: sudo ./integrity-check.sh
-#   -g (generate) : Vytvorí baseline
+# integrity-check.sh - Kontrola integrity kritických systémových souborů
+# Použití: sudo ./integrity-check.sh
+#   -g (generate) : Vytvoří baseline
 #   -c (check)    : Porovná s baseline (výchozí)
 
 BASELINE="/var/log/checksum-baseline.txt"
@@ -547,7 +547,7 @@ generate_baseline() {
             sha256sum "$f" >> "$BASELINE"
         fi
     done
-    echo "Baseline vytvorena: $BASELINE ($(wc -l < "$BASELINE") souboru)"
+    echo "Baseline vytvořena: $BASELINE ($(wc -l < "$BASELINE") souborů)"
 }
 
 check_integrity() {
@@ -556,10 +556,10 @@ check_integrity() {
         exit 1
     fi
     if sha256sum -c "$BASELINE" 2>/dev/null; then
-        echo "Vsechny soubory v porádku."
+        echo "Všechny soubory v pořádku."
         exit 0
     else
-        echo "POZOR: Nekteré soubory byly zmeneny!"
+        echo "POZOR: Některé soubory byly změněny!"
         sha256sum -c "$BASELINE" 2>/dev/null | grep -v "OK$"
         exit 2
     fi
@@ -568,16 +568,16 @@ check_integrity() {
 case "${1:--c}" in
     -g) generate_baseline ;;
     -c) check_integrity ;;
-    *) echo "Pouzití: $0 [-g|-c]" ;;
+    *) echo "Použití: $0 [-g|-c]" ;;
 esac
 ```
 
-Pouzití:
+Použití:
 
 ```bash
-# Vytvorení/obnovení baseline
+# Vytvoření/obnovení baseline
 sudo ./integrity-check.sh -g
-# Baseline vytvorena: /var/log/checksum-baseline.txt (6 souboru)
+# Baseline vytvořena: /var/log/checksum-baseline.txt (6 souborů)
 
 # Kontrola
 sudo ./integrity-check.sh -c
@@ -587,36 +587,36 @@ sudo ./integrity-check.sh -c
 # /etc/sudoers: OK
 # /etc/hosts: OK
 # /etc/resolv.conf: OK
-# Vsechny soubory v porádku.
+# Všechny soubory v pořádku.
 ```
 
 ### Skript 2: security-audit.sh
 
-Tento skript byl predstaven jiz v kapitole 7, ale zde je jeho úplné znení v kontextu bezpecnostního auditu.
+Tento skript byl představen již v kapitole 7, ale zde je jeho úplné znění v kontextu bezpečnostního auditu.
 
 ```bash
 #!/bin/bash
-# security-audit.sh - Základní bezpecnostní audit
+# security-audit.sh - Základní bezpečnostní audit
 
-echo "=== Neuspesné SSH prihlasení ==="
+echo "=== Neúspěšné SSH prihlasení ==="
 journalctl -u sshd -p err --since "7 days ago" | grep "Failed password" | wc -l
 # 127
 
-echo "=== Posledních 5 neuspesných pokusu ==="
+echo "=== Posledních 5 neúspěšných pokusu ==="
 journalctl -u sshd -p err --since "7 days ago" | grep "Failed password" | tail -5
 # Jan 17 09:15:23 server sshd[4521]: Failed password for root from 10.0.0.99 port 54321 ssh2
 # Jan 17 09:15:25 server sshd[4523]: Failed password for invalid user admin from 10.0.0.99 port 54322 ssh2
 
-echo "=== Aktuálne prihlásení uzivatelé ==="
+echo "=== Aktuálně prihlásení uživatelé ==="
 who
 # alice    pts/0        2025-01-17 10:00 (192.168.1.50)
 # bob      pts/1        2025-01-17 09:45 (192.168.1.51)
 
-echo "=== Sudo pouzití za poslední týden ==="
+echo "=== Sudo použití za poslední týden ==="
 journalctl -t sudo --since "7 days ago" | grep "COMMAND"
 # Jan 17 10:00:01 server sudo[5678]: alice : TTY=pts/0 ; PWD=/home/alice ; USER=root ; COMMAND=/usr/bin/apt update
 
-echo "=== OteVrené porty ==="
+echo "=== Otevřené porty ==="
 ss -tlnp
 # State   Recv-Q  Send-Q   Local Address:Port     Peer Address:Port  Process
 # LISTEN  0       128          0.0.0.0:2222          0.0.0.0:*      users:(("sshd",pid=1234))
@@ -627,9 +627,9 @@ echo "=== Soubory s SUID/SGID (bez standardních) ==="
 find /usr -type f \( -perm -4000 -o -perm -2000 \) | grep -v -E '/(bin|lib)/'
 # /usr/local/bin/custom-app
 
-echo "=== Úcty bez hesla ==="
+echo "=== Účty bez hesla ==="
 awk -F: '($2 == "" || $2 == "!") {print $1 " has no password set"}' /etc/shadow 2>/dev/null
-# (prázdný výstup = vsechny úcty mají heslo)
+# (prázdný výstup = všechny úcty mají heslo)
 
 echo "=== Zmeny v /etc/passwd za poslední den ==="
 ausearch -k passwd_changes --start today 2>/dev/null || echo "auditd rule not configured"
@@ -637,11 +637,11 @@ ausearch -k passwd_changes --start today 2>/dev/null || echo "auditd rule not co
 
 ### Kombinace skriptu
 
-Pro komplexní kontrolu muzeme skripty zkombinovat:
+Pro komplexní kontrolu můžeme skripty zkombinovat:
 
 ```bash
 #!/bin/bash
-# daily-audit.sh - Denní bezpecnostní kontrola
+# daily-audit.sh - Denní bezpečnostní kontrola
 
 echo "=== 1. Integrity check (baseline) ==="
 ./integrity-check.sh -c || echo "INTEGRITY FAILURE"
@@ -652,7 +652,7 @@ sudo chkrootkit | grep -E "INFECTED|not tested"
 echo "=== 3. AIDE kontrola ==="
 sudo aide --check | grep -E "changed:|added:|removed:"
 
-echo "=== 4. Overení balícku ==="
+echo "=== 4. Ověření balíčků ==="
 sudo debsums -s
 
 echo "=== 5. Security audit ==="
@@ -661,25 +661,25 @@ echo "=== 5. Security audit ==="
 
 ---
 
-## 7. Praktický príklad
-### Scénár: Detekce podezrelé aktivity na serveru
-**Situace:** Spravujete Linux server (Debian 12). Vsime si zvýseného síového provozu na portu 443 a divné chování webového serveru.
+## 7. Praktický příklad
+### Scénář: Detekce podezřelé aktivity na serveru
+**Situace:** Spravujete Linux server (Debian 12). Všimne si zvýseného síťového provozu na portu 443 a divné chování webového serveru.
 **1. Zahájení auditu**
 Administrátor spustí rychlé kontrolní nástroje:
 ```bash
-# Kontrola, co beVí na portech
+# Kontrola, co běží na portech
 ss -tlnp
 # State   Recv-Q  Send-Q   Local Address:Port     Peer Address:Port  Process
 # LISTEN  0       128          0.0.0.0:443           0.0.0.0:*      users:(("httpd",pid=9999))
 # LISTEN  0       128          0.0.0.0:4444          0.0.0.0:*      users:(("httpd",pid=9999))
 ```
-Nový port 4444 je podezrelý — httpd by tam nemel naslouchat.
+Nový port 4444 je podezřelý — httpd by tam nemel naslouchat.
 **2. Rootkit sken**
 ```bash
 sudo chkrootkit | grep INFECTED
 # Checking 'scalper'... INFECTED
 ```
-chkrootkit nasel znamý rootkit. Pro potvrzení:
+chkrootkit našel znamý rootkit. Pro potvrzení:
 ```bash
 sudo rkhunter --check --skip-keypress | grep -E "Warning|INFECTED"
 # Warning: The file properties have changed:
@@ -687,8 +687,8 @@ sudo rkhunter --check --skip-keypress | grep -E "Warning|INFECTED"
 #   File: /bin/ps
 #   File: /usr/sbin/sshd
 ```
-Rootkit pravdepodobne nahradil systémové binárky (ls, ps, sshd), aby skryl svou aktivitu.
-**3. Integrityní kontrola**
+Rootkit pravděpodobně nahradil systémové binárky (ls, ps, sshd), aby skryl svou aktivitu.
+**3. Integritní kontrola**
 ```bash
 # Vlastní baseline
 sudo ./integrity-check.sh -c
@@ -705,7 +705,7 @@ sudo aide --check | grep "changed:"
 # changed: /usr/sbin/sshd
 # changed: /etc/ssh/sshd_config
 ```
-**4. Overení balícku**
+**4. Ověření balíčků**
 ```bash
 # Na Debian/Ubuntu
 sudo debsums -s | grep FAILED
@@ -721,64 +721,64 @@ rpm -Va | grep -v "c"
 # S.5....T.    /usr/sbin/sshd
 ```
 **5. Vyhodnocení**
-Vysledy jsou jednoznacné:
+Výsledky jsou jednoznačné:
 | Nástroj | Nález |
 |---------|-------|
 | chkrootkit | INFECTED (scalper) |
 | rkhunter | Warning: změnené binárky |
 | integrity-check.sh | sshd_config se lisí |
-| AIDE | 4 soubory zmeneny |
-| debsums | 3 balícky FAILED |
-**6. Doporucené kroky**
-1. **Okamzite odpojit server ze síte** — fyzicky nebo pres iptables:
+| AIDE | 4 soubory změněny |
+| debsums | 3 balíčky FAILED |
+**6. Doporučené kroky**
+1. **Okamžitě odpojit server ze sítě** — fyzicky nebo přes iptables:
    ```bash
    iptables -P INPUT DROP
    iptables -P OUTPUT DROP
    ```
 2. **Forenzní analýza** (nedotýkat se serveru):
-   - Vytvorit obraz disku (dd)
-   - Uloyit logy (journalctl, /var/log)
-   - Zaznamenat procesy (ps aux) a síové spojení (ss -tlnp)
-3. **Preinstalace** — vázné narusení integrity binárek znamená, ze server nelze bezpecne vycistit. Jediným spolehlivým resením je reinstalace z overeného media.
+   - Vytvořit obraz disku (dd)
+   - Uložit logy (journalctl, /var/log)
+   - Zaznamenat procesy (ps aux) a síťové spojení (ss -tlnp)
+3. **Preinstalace** — vážné narušení integrity binárek znamená, že server nelze bezpečně vyčistit. Jediným spolehlivým řešením je reinstalace z ověřeného média.
 4. **Po reinstalaci**:
-   - Aplikovat vsechny aktualizace
-   - Zmenit vsechna hesla a SSH klíce
-   - Zavést denní integrityní kontroly (cron + AIDE + debsums)
+   - Aplikovat všechny aktualizace
+   - Změnit všechna hesla a SSH klíče
+   - Zavést denní integritní kontroly (cron + AIDE + debsums)
    - Zavést pravidelný rootkit sken (rkhunter v cronu)
-   - Zpísnit firewall (viz kapitola 24)
-> **Poznámka:** Detekce je az poslední linie obrany. Prevence (firewall, aktualizace, SELinux/AppArmor, bezpecné konfigurace) je vzdy lepsí nez detekce. Viz kapitoly 7, 15, 23, 24.
+   - Zpřísnit firewall (viz kapitola 24)
+> **Poznámka:** Detekce je až poslední linie obrany. Prevence (firewall, aktualizace, SELinux/AppArmor, bezpečné konfigurace) je vždy lepší než detekce. Viz kapitoly 7, 15, 23, 24.
 ---
 ## Shrnutí
-Bezpecnostní audit je nepostradatelnou soucástí správy kazdého serveru. Zádný firewall nebo aktualizace není dokonalá — dríve nebo pozdji se muze útok podarit. Rozdíl mezi bezvýznamnou událostí a vázní bezpecnostní incidentem je vcasná detekce.
-### Prehled nástroju
-| Nástroj | Úcel | Frekvence | Zdroj |
+Bezpečnostní audit je nepostradatelnou součástí správy každého serveru. Žádný firewall nebo aktualizace není dokonalá — dříve nebo později se může útok podařit. Rozdíl mezi bezvýznamnou událostí a vážným bezpečnostním incidentem je včasná detekce.
+### Přehled nástrojů
+| Nástroj | Účel | Frekvence | Zdroj |
 |---------|------|-----------|-------|
-| sha256sum | Kontrola integrity jednotlivých souboru | Podle potreby | coreutils |
-| b2sum | Rychlejsí alternativa SHA-256 | Podle potreby | coreutils |
-| chkrootkit | Rychlé skenování znamých rootkitu | Denn | apt |
-| rkhunter | Hloubková kontrola + overení binárek | Denn (s --propupd po upgrade) | apt |
-| AIDE | Integrity monitoring kritických adresáru | Denn nebo tydenne | apt |
-| Tripwire | AIDE s podepsanou databází | Denn nebo tydenne | apt |
-| debsums | Overení balícku proti databázi dpkg | Po kazdém podezrení | apt |
-| rpm -Va | Overení balícku na RHEL/Fedora | Po kazdém podezrení | vestavený |
-| integrity-check.sh | Vlastní baseline kritických souboru | Podle potreby | vlastní skript |
-| security-audit.sh | Rychlá kontrola SSH logu, portu, SUID | Denn | vlastní skript |
-### Doporucený harmonogram
+| sha256sum | Kontrola integrity jednotlivých souborů | Podle potřeby | coreutils |
+| b2sum | Rychlejší alternativa SHA-256 | Podle potřeby | coreutils |
+| chkrootkit | Rychlé skenování známých rootkitu | Denně | apt |
+| rkhunter | Hloubková kontrola + ověření binárek | Denně (s --propupd po upgrade) | apt |
+| AIDE | Integrity monitoring kritických adresářů | Denně nebo týdně | apt |
+| Tripwire | AIDE s podepsanou databází | Denně nebo týdně | apt |
+| debsums | Ověření balíčků proti databázi dpkg | Po každém podezření | apt |
+| rpm -Va | Ověření balíčků na RHEL/Fedora | Po každém podezření | vestavěný |
+| integrity-check.sh | Vlastní baseline kritických souborů | Podle potřeby | vlastní skript |
+| security-audit.sh | Rychlá kontrola SSH logu, portu, SUID | Denně | vlastní skript |
+### Doporučený harmonogram
 | Frekvence | Akce |
 |-----------|------|
-| Denn | security-audit.sh (SSH logy + porty + uzivatele) |
-| Denn | chkrootkit (rychlý rootkit scan) |
-| Denn | rkhunter --check (hloubková kontrola) |
-| Týdne | AIDE --check (integrita /etc, /bin, /sbin, /usr) |
-| Po kazdém apt upgrade | rkhunter --propupd + aideinit + integrity-check.sh -g |
-| Pri podezrení | debsums -s + integrity-check.sh -c + manualní analýza |
+| Denně | security-audit.sh (SSH logy + porty + uživatele) |
+| Denně | chkrootkit (rychlý rootkit scan) |
+| Denně | rkhunter --check (hloubková kontrola) |
+| Týdně | AIDE --check (integrita /etc, /bin, /sbin, /usr) |
+| Po každém apt upgrade | rkhunter --propupd + aideinit + integrity-check.sh -g |
+| Při podezření | debsums -s + integrity-check.sh -c + manuální analýza |
 ### Související kapitoly
-- [Kapitola 7: Bezpecná architektura](07-bezpecna-architektura.md) — audit logu, auditd, fail2ban, kernel hardening
-- [Kapitola 10: Aktualizace systému](10-aktualizace-systemu.md) — správa balícku, apt, dpkg
-- [Kapitola 12: Práva souboru](12-prava-souboru.md) — SUID, SGID, ACL
-- [Kapitola 14: Zálohování a obnova](14-zalohovani.md) — záloha dat pred reinstalací
+- [Kapitola 7: Bezpečná architektura](07-bezpecna-architektura.md) — audit logu, auditd, fail2ban, kernel hardening
+- [Kapitola 10: Aktualizace systému](10-aktualizace-systemu.md) — správa balíčků, apt, dpkg
+- [Kapitola 12: Práva souborů](12-prava-souboru.md) — SUID, SGID, ACL
+- [Kapitola 14: Zálohování a obnova](14-zalohovani.md) — záloha dat před reinstalací
 - [Kapitola 15: AppArmor](15-apparmor.md) — mandatory access control
-- [Kapitola 19: Práce s SSH](19-prace-s-ssh.md) — bezpecná konfigurace SSH
+- [Kapitola 19: Práce s SSH](19-prace-s-ssh.md) — bezpečná konfigurace SSH
 - [Kapitola 23: SELinux](23-selinux.md) — mandatory access control na RHEL
 - [Kapitola 24: Firewall](24-firewall.md) — iptables, nftables, ufw
 ---
