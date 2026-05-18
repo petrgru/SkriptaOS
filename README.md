@@ -36,6 +36,7 @@ Tento kurz je určen pro studenty informatiky a programátory, kteří chtějí 
 | 23 | [SELinux](23-selinux.md) | Mandatory Access Control, politiky, kontexty |
 | 24 | [Firewall](24-firewall.md) | iptables, nftables, ufw — správa a konfigurace Linux firewallu |
 | 25 | [Bezpečnostní audit](25-bezpecnostni-audit.md) | Rootkity, kontrolní součty, AIDE, debsums, detekce průniku |
+| 26 | [Webový server](26-web-server.md) | Apache, Nginx, PHP-FPM, gunicorn, PM2, ACME, logování |
 
 ---
 
@@ -88,5 +89,6 @@ SkriptaOS/
 ├── 22-reseni-problemu.md           # Řešení problémů
 ├── 23-selinux.md                   # SELinux
 ├── 24-firewall.md
-└── 25-bezpecnostni-audit.md
+├── 25-bezpecnostni-audit.md
+└── 26-web-server.md
 ```
