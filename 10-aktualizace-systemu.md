@@ -170,6 +170,10 @@ pip freeze --local | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip install -U
 sudo npm update -g
 ```
 
+
+> **Související**: Ověření integrity nainstalovaných balíčků pomocí `debsums` (Debian/Ubuntu)
+> nebo `rpm --verify` (RHEL/Fedora) je popsáno v [kapitole 25](25-bezpecnostni-audit.md).
+
 ---
 
 ## 2. Aktualizace kernelu

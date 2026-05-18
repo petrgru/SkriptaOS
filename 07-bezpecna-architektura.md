@@ -600,50 +600,8 @@ ss -tlnp | grep 2222
 # LISTEN 0 128 0.0.0.0:2222 0.0.0.0:* users:(("sshd",pid=1234,fd=3))
 ```
 
-
-
-### 3. Audit logů a detekce průniku
-
-```bash
-#!/bin/bash
-# security-audit.sh - Zakladni bezpecnostni audit
-
-echo "=== Neuspesne SSH prihlaseni ==="
-journalctl -u sshd -p err --since "7 days ago" | grep "Failed password" | wc -l
-# 127
-
-echo "=== Poslednich 5 neuspesnych pokusu ==="
-journalctl -u sshd -p err --since "7 days ago" | grep "Failed password" | tail -5
-# Jan 17 09:15:23 server sshd[4521]: Failed password for root from 10.0.0.99 port 54321 ssh2
-# Jan 17 09:15:25 server sshd[4523]: Failed password for invalid user admin from 10.0.0.99 port 54322 ssh2
-
-echo "=== Aktualne prihlaseni uzivatele ==="
-who
-# alice    pts/0        2025-01-17 10:00 (192.168.1.50)
-# bob      pts/1        2025-01-17 09:45 (192.168.1.51)
-
-echo "=== Sudo pouziti za posledni tyden ==="
-journalctl -t sudo --since "7 days ago" | grep "COMMAND"
-# Jan 17 10:00:01 server sudo[5678]: alice : TTY=pts/0 ; PWD=/home/alice ; USER=root ; COMMAND=/usr/bin/apt update
-
-echo "=== Otevrene porty ==="
-ss -tlnp
-# State   Recv-Q  Send-Q   Local Address:Port     Peer Address:Port  Process
-# LISTEN  0       128          0.0.0.0:2222          0.0.0.0:*      users:(("sshd",pid=1234))
-# LISTEN  0       128          0.0.0.0:80            0.0.0.0:*      users:(("nginx",pid=2345))
-# LISTEN  0       128          0.0.0.0:443           0.0.0.0:*      users:(("nginx",pid=2345))
-
-echo "=== Soubory s SUID/SGID (bez standardnich) ==="
-find /usr -type f \( -perm -4000 -o -perm -2000 \) | grep -v -E '/(bin|lib)/'
-# /usr/local/bin/custom-app
-
-echo "=== Ucty bez hesla ==="
-awk -F: '($2 == "" || $2 == "!") {print $1 " has no password set"}' /etc/shadow 2>/dev/null
-# (prazdny vystup = vsechny ucty maji heslo)
-
-echo "=== Zmeny v /etc/passwd za posledni den ==="
-ausearch -k passwd_changes --start today 2>/dev/null || echo "auditd rule not configured"
-```
+> Podrobný bezpečnostní audit včetně detekce rootkitů, kontroly integrity souborů
+> a ověřování systémových balíčků je popsán v [kapitole 25](25-bezpecnostni-audit.md).
 
 ---
 

@@ -41,6 +41,8 @@ tar -xzf home-backup.tar.gz --wildcards '*.txt'
 tar --exclude='*.mp4' --exclude='*.iso' -czf data-backup.tar.gz /data
 ```
 
+> **Související**: Použití kontrolních součtů (sha256sum, md5sum) pro ověření integrity záloh je popsáno v [kapitole 25](25-bezpecnostni-audit.md).
+
 ---
 
 ## Kompresní nástroje

@@ -28,25 +28,25 @@ Všechny příkazy v této kapitole vyžadují `sudo`.
 
 ## Srovnání technologií redundance
 
-| Vlastnost | RAID (mdadm) | LVM+RAID | ZFS | BTRFS | SnapRAID |
-|---------|-------------|--------|---|---|-----|--------|
-| Úroveň redundance | 0, 1, 5, 6, 10 | dm-raid (0, 1, 5, 6, 10) | mirror, RAIDZ1/2/3 | RAID0, 1, 10, 5, 6, DUP | Single/dual parity |
-| Parity výpočet | CPU (md/XOR) | CPU | CPU (copy-on-write) | CPU (COW) | CPU (při sync) |
-| Copy-on-Write | ✗ | ✗ (LVM) | ✓ | ✓ | ✗ |
-| Komprese | ✗ | ✗ | ✓ (LZ4, ZSTD, gzip) | ✓ (ZSTD, LZO, ZLIB) | ✗ |
-| Snapshoty | ✗ | ✓ (LVM) | ✓ (zfs snapshot) | ✓ (btrfs snapshot) | ✗ |
-| Deduplikace | ✗ | ✗ | ✓ (volitelná) | ✗ (experimentální) | ✗ |
-| Samooprava (scrub) | ✗ | ✗ | ✓ (silná) | ✓ (omezená) | ✓ (při scrub) |
-| Online rozšiřování | ✓ | ✓ | ✓ | ✓ | ✓ (přidání disků) |
-| Různá velikost disků | omezeně | ✓ | ✓ | ✓ | ✓ |
-| TRIM/discard pro SSD | omezeně (RAID1/10) | ✗ | ✓ | ✓ | ✓ (přímo na disk) |
-| Cache vrstva | ✗ | ✗ | ✓ (ARC, L2ARC, SLOG) | ✗ | ✗ |
-| Náročnost na RAM | Nízká | Nízká | Vysoká (~1 GB / 1 TB) | Střední | Nízká |
-| Výkon zápisu | Vysoký | Vysoký | Střední (COW režie) | Střední (COW režie) | Vysoký (sync periodicky) |
-| Výkon čtení | Vysoký | Vysoký | Vysoký (ARC cache) | Vysoký | Rychlý (přímý přístup) |
-| Maximální kapacita | Dle md limitu | Dle VG/LV limitu | 256 ZiB / pool | 16 EiB / FS | Dle konfigurace |
-| Vhodné použití | Servery, NAS | Flexibilní oddíly | Enterprise NAS, DB | Běžné NAS, root FS | Media servery, archiv |
-| Licence | GPL (kernel) | GPL (kernel) | CDDL (OpenZFS) | GPL (kernel) | GPLv3 |
+| Vlastnost | mdadm | LVM+RAID | ZFS | BTRFS | SnapRAID |
+|-----------|-------|----------|-----|-------|----------|
+| Úroveň RAID | 0,1,5,6,10 | 0,1,5,6,10 | mirror,RZD1/2/3 | 0,1,10,5,6,DUP | single/dual |
+| Výpočet parity | md/XOR | CPU | CPU (COW) | CPU (COW) | CPU (sync) |
+| Copy-on-Write | ✗ | ✗ | ✓ | ✓ | ✗ |
+| Komprese | ✗ | ✗ | LZ4,ZSTD,gzip | ZSTD,LZO,ZLIB | ✗ |
+| Snapshoty | ✗ | ✓ | ✓ | ✓ | ✗ |
+| Deduplikace | ✗ | ✗ | ✓ (volitelně) | ✗ | ✗ |
+| Samooprava | ✗ | ✗ | ✓ | ✓ | ✓ |
+| Online rozšiř. | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Různé velikosti | omezeně | ✓ | ✓ | ✓ | ✓ |
+| TRIM/discard | RAID1/10 jen | ✗ | ✓ | ✓ | ✓ |
+| Cache vrstva | ✗ | ✗ | ARC,L2ARC,SLOG | ✗ | ✗ |
+| Náročnost RAM | Nízká | Nízká | Vysoká (~1GB/TB) | Střední | Nízká |
+| Výkon zápisu | Vysoký | Vysoký | Střední | Střední | Vysoký |
+| Výkon čtení | Vysoký | Vysoký | Vysoký (ARC) | Vysoký | Rychlý |
+| Max. kapacita | dle limitu md | dle VG/LV | 256 ZiB/pool | 16 EiB/FS | dle konf. |
+| Vhodné použití | Servery,NAS | Flexibilní disky | Enterprise NAS,DB | NAS, root FS | Media,archiv |
+| Licence | GPL | GPL | CDDL | GPL | GPLv3 |
 
 ---
 
